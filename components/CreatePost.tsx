@@ -1,68 +1,87 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, Image, Button, StyleSheet } from 'react-native';
-import * as ImagePicker from 'expo-image-picker';
+import { View, Text, TextInput, Button, StyleSheet, ScrollView, TouchableOpacity, Image } from 'react-native';
 
-interface PostData {
-  thumbnail: string | null;
-  title: string;
-  description: string;
-}
-
-const CreatePost: React.FC = () => {
+const BoardCreator = () => {
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
+  const [tags, setTags] = useState<string[]>([]);
+  const [newTag, setNewTag] = useState('');
   const [thumbnail, setThumbnail] = useState<string | null>(null);
-  const [title, setTitle] = useState<string>('');
-  const [description, setDescription] = useState<string>('');
 
-  const pickImage = async () => {
-    let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [4, 3],
-      quality: 1,
-    });
-
-    if (!result.canceled) {
-      setThumbnail(result.uri);
+  const addTag = () => {
+    if (newTag.trim()) {
+      setTags([...tags, newTag]);
+      setNewTag('');
     }
   };
 
-  const handleSubmit = () => {
-    const postData: PostData = {
-      thumbnail,
-      title,
-      description,
-    };
-    console.log('Post Data:', postData);
+  const handleCreateBoard = () => {
+    // ボードを作成するロジックをここに追加
+    console.log({ title, description, tags, thumbnail });
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.label}>Title:</Text>
+    <ScrollView contentContainerStyle={styles.container}>
+      <Text style={styles.heading}>BOARD SETTING</Text>
+      
+      {/* タイトル入力 */}
+      <Text style={styles.label}>タイトル</Text>
       <TextInput
         style={styles.input}
-        placeholder="Enter post title"
+        placeholder="New Board"
         value={title}
         onChangeText={setTitle}
       />
 
-      <Text style={styles.label}>Description:</Text>
+      {/* 説明入力 */}
+      <Text style={styles.label}>説明</Text>
       <TextInput
-        style={styles.input}
-        placeholder="Enter post description"
+        style={[styles.input, styles.textArea]}
+        placeholder="Description"
         value={description}
         onChangeText={setDescription}
-        multiline
+        multiline={true}
+        numberOfLines={4}
       />
 
-      <Text style={styles.label}>Thumbnail:</Text>
-      {thumbnail ? (
-        <Image source={{ uri: thumbnail }} style={styles.thumbnail} />
-      ) : (
-        <Button title="Pick a thumbnail" onPress={pickImage} />
-      )}
+      {/* タグ追加 */}
+      <Text style={styles.label}>タグ</Text>
+      <View style={styles.tagContainer}>
+        <TextInput
+          style={styles.tagInput}
+          placeholder="Add New Tag"
+          value={newTag}
+          onChangeText={setNewTag}
+        />
+        <TouchableOpacity style={styles.addTagButton} onPress={addTag}>
+          <Text style={styles.addTagText}>+</Text>
+        </TouchableOpacity>
+      </View>
+      <View style={styles.tagsList}>
+        {tags.map((tag, index) => (
+          <Text key={index} style={styles.tag}>
+            {tag}
+          </Text>
+        ))}
+      </View>
 
-      <Button title="Submit Post" onPress={handleSubmit} />
-    </View>
+      {/* サムネイル */}
+      <Text style={styles.label}>サムネイル</Text>
+      <TouchableOpacity style={styles.thumbnail}>
+        {thumbnail ? (
+          <Image source={{ uri: thumbnail }} style={styles.thumbnailImage} />
+        ) : (
+          <View style={styles.placeholder}>
+            <Text>Upload Thumbnail</Text>
+          </View>
+        )}
+      </TouchableOpacity>
+
+      {/* Make Board ボタン */}
+      <TouchableOpacity style={styles.createButton} onPress={handleCreateBoard}>
+        <Text style={styles.createButtonText}>Make Board</Text>
+      </TouchableOpacity>
+    </ScrollView>
   );
 };
 
@@ -70,23 +89,87 @@ const styles = StyleSheet.create({
   container: {
     padding: 20,
   },
-  label: {
-    fontSize: 18,
+  heading: {
+    fontSize: 20,
     fontWeight: 'bold',
-    marginVertical: 10,
+    marginBottom: 20,
+  },
+  label: {
+    fontSize: 16,
+    marginBottom: 8,
   },
   input: {
     borderWidth: 1,
     borderColor: '#ccc',
     padding: 10,
     borderRadius: 5,
-    marginBottom: 20,
+    marginBottom: 16,
+  },
+  textArea: {
+    height: 80,
+  },
+  tagContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  tagInput: {
+    flex: 1,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    padding: 10,
+    borderRadius: 5,
+  },
+  addTagButton: {
+    backgroundColor: '#000',
+    padding: 10,
+    marginLeft: 10,
+    borderRadius: 5,
+  },
+  addTagText: {
+    color: '#fff',
+    fontSize: 18,
+  },
+  tagsList: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginBottom: 16,
+  },
+  tag: {
+    backgroundColor: '#eee',
+    padding: 8,
+    borderRadius: 5,
+    marginRight: 8,
+    marginBottom: 8,
   },
   thumbnail: {
-    width: 100,
-    height: 100,
-    marginVertical: 10,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 5,
+    height: 150,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  thumbnailImage: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 5,
+  },
+  placeholder: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  createButton: {
+    backgroundColor: '#000',
+    padding: 15,
+    borderRadius: 5,
+    alignItems: 'center',
+  },
+  createButtonText: {
+    color: '#fff',
+    fontSize: 16,
   },
 });
 
-export default CreatePost;
+export default BoardCreator;
