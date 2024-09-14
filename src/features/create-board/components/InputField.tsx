@@ -1,4 +1,3 @@
-// /components/InputField.tsx
 import React from 'react';
 import { TextInput, Text, View, StyleSheet } from 'react-native';
 

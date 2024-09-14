@@ -1,10 +1,9 @@
-// /screens/BoardCreator.tsx
 import React, { useState } from 'react';
 import { ScrollView, StyleSheet } from 'react-native';
-import InputField from '../components/InputField';
-import TagInput from '../components/TagInput';
-import ThumbnailUploader from '../components/ThumbnailUploader';
-import CreateButton from '../components/CreateButton';
+import InputField from '../features/create-board/components/InputField';
+import TagInput from '../features/create-board/components/TagInput';
+import ThumbnailUploader from '../features/create-board/components/ThumbnailUploader';
+import CreateButton from '../features/create-board/components/CreateButton';
 import * as ImagePicker from 'expo-image-picker';
 
 const BoardCreator = () => {
@@ -27,7 +26,6 @@ const BoardCreator = () => {
   };
 
   const handleCreateBoard = () => {
-    // ボード作成ロジック
     console.log({ title, description, tags, thumbnail });
   };
 
