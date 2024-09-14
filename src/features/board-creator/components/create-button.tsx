@@ -3,20 +3,21 @@ import { TouchableOpacity, Text, StyleSheet } from 'react-native';
 
 interface CreateButtonProps {
   onPress: () => void;
+  text: string;
 }
 
-const CreateButton: React.FC<CreateButtonProps> = ({ onPress }) => {
+const CreateButton: React.FC<CreateButtonProps> = ({ onPress, text }) => {
   return (
     <TouchableOpacity style={styles.button} onPress={onPress}>
-      <Text style={styles.buttonText}>Make Board</Text>
+      <Text style={styles.buttonText}>{text}</Text>
     </TouchableOpacity>
   );
 };
 
 const styles = StyleSheet.create({
   button: {
-    backgroundColor: '#000',
-    padding: 15,
+    backgroundColor: '#334155',
+    padding: 12,
     borderRadius: 5,
     alignItems: 'center',
   },

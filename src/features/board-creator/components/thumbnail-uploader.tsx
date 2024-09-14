@@ -10,10 +10,10 @@ const ThumbnailUploader: React.FC<ThumbnailUploaderProps> = ({ thumbnail, onUplo
   return (
     <TouchableOpacity style={styles.thumbnail} onPress={onUpload}>
       {thumbnail ? (
-        <Image source={{ uri: thumbnail }} style={styles.thumbnailImage} />
+        <Image source={{ uri: thumbnail }} style={styles.thumbnailImage} resizeMode="contain"/>
       ) : (
         <View style={styles.placeholder}>
-          <Text>Upload Thumbnail</Text>
+          <Text>サムネイル画像を選ぶ</Text>
         </View>
       )}
     </TouchableOpacity>

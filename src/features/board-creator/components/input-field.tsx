@@ -1,5 +1,5 @@
 import React from 'react';
-import { TextInput, Text, View, StyleSheet } from 'react-native';
+import { View, Text, TextInput, StyleSheet } from 'react-native';
 
 interface InputFieldProps {
   label: string;
@@ -7,7 +7,8 @@ interface InputFieldProps {
   onChangeText: (text: string) => void;
   multiline?: boolean;
   numberOfLines?: number;
-  placeholder: string;
+  placeholder?: string;
+  topAlignment?: boolean;
 }
 
 const InputField: React.FC<InputFieldProps> = ({
@@ -16,13 +17,18 @@ const InputField: React.FC<InputFieldProps> = ({
   onChangeText,
   multiline = false,
   numberOfLines = 1,
-  placeholder
+  placeholder,
+  topAlignment = false
 }) => {
   return (
     <View style={styles.container}>
       <Text style={styles.label}>{label}</Text>
       <TextInput
-        style={[styles.input, multiline && styles.textArea]}
+        style={[
+          styles.input,
+          multiline && styles.textArea,
+          topAlignment && styles.topAligned
+        ]}
         value={value}
         onChangeText={onChangeText}
         multiline={multiline}
@@ -35,20 +41,24 @@ const InputField: React.FC<InputFieldProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    marginBottom: 16,
+    marginVertical: 10,
   },
   label: {
     fontSize: 16,
-    marginBottom: 8,
+    marginBottom: 5,
   },
   input: {
     borderWidth: 1,
     borderColor: '#ccc',
+    borderRadius: 4,
     padding: 10,
-    borderRadius: 5,
   },
   textArea: {
-    height: 80,
+    height: 100,
+    textAlignVertical: 'top', 
+  },
+  topAligned: {
+    textAlignVertical: 'top',
   },
 });
 

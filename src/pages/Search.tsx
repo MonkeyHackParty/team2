@@ -1,5 +1,6 @@
+
 import React, { useEffect, useState } from 'react';
-import { View, StatusBar, StyleSheet, SafeAreaView, ActivityIndicator, FlatList } from 'react-native';
+import { View, StatusBar, StyleSheet, SafeAreaView, ActivityIndicator, FlatList, TextInput } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { Board } from '../features/board';
 import AppbarTop from '../components/appbar-top';
@@ -10,13 +11,15 @@ import BoardData from '../types/BoardData';
 
 const PAGE_SIZE = 10;
 
-const Home = () => {
+const SearchPage = () => {
   const [data, setData] = useState<BoardData[]>([]);
+  const [filteredData, setFilteredData] = useState<BoardData[]>([]);
   const [loading, setLoading] = useState(true);
   const [lastVisible, setLastVisible] = useState<firebase.firestore.DocumentSnapshot | null>(null);
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true); 
   const [user, setUser] = useState<firebase.User | null>(null);
+  const [searchText, setSearchText] = useState('');
 
   const fetchData = async (loadMore = false) => {
     if (loadMore && (loadingMore || !hasMore)) return;
@@ -61,10 +64,31 @@ const Home = () => {
     }
   };
 
+  const filterData = () => {
+    if (searchText.trim() === '') {
+      setFilteredData([]);
+      return;
+    }
+
+    const filtered = data.filter(item => {
+      const lowerSearchText = searchText.toLowerCase();
+      return item.title.toLowerCase().includes(lowerSearchText) ||
+             item.description.toLowerCase().includes(lowerSearchText) ||
+             item.tags.some(tag => tag.toLowerCase().includes(lowerSearchText));
+    });
+
+    setFilteredData(filtered);
+  };
+
+  useEffect(() => {
+    filterData();
+  }, [searchText, data]);
+
   useEffect(() => {
     const unsubscribeAuth = firebase.auth().onAuthStateChanged((currentUser) => {
       setUser(currentUser);
       setData([]);
+      setFilteredData([]);
       setLastVisible(null);
       setHasMore(true);
       fetchData(); 
@@ -87,12 +111,18 @@ const Home = () => {
     <SafeAreaProvider>
       <SafeAreaView style={styles.container}>
         <AppbarTop title="Effector Memory" canLogout={true} />
+        <TextInput
+          style={styles.searchBar}
+          placeholder="Search..."
+          value={searchText}
+          onChangeText={text => setSearchText(text)}
+        />
         <View style={styles.content}>
           {loading ? (
             <ActivityIndicator size="large" color="#334155" />
           ) : (
             <FlatList
-              data={data}
+              data={filteredData}
               renderItem={renderItem}
               keyExtractor={(item) => item.boardID}
               onEndReached={() => fetchData(true)} 
@@ -111,10 +141,18 @@ const styles = StyleSheet.create({
     flex: 1,
     marginTop: StatusBar.currentHeight,
   },
+  searchBar: {
+    height: 50,
+    margin: 10,
+    borderColor: 'gray',
+    borderWidth: 1,
+    borderRadius: 5,
+    paddingHorizontal: 10,
+  },
   content: {
     flex: 1,
     paddingHorizontal: 10,
   },
 });
 
-export default Home;
+export default SearchPage;

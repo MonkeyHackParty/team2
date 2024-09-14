@@ -21,6 +21,7 @@ export function AppbarTopFolder({ title, index, setIndex }: AppbarTopFolderProps
         <Pressable style={styles.iconContainer}>
           <AccountIcon />
         </Pressable>
+        <View style={styles.borderBottom} />
       </View>
 
       <View style={styles.footer}>
@@ -60,7 +61,6 @@ const styles = StyleSheet.create({
   },
   header: {
     height: 60,
-    backgroundColor: '#F9FAFB',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -88,7 +88,7 @@ const styles = StyleSheet.create({
   },
   borderBottom: {
     height: 1,
-    backgroundColor: '#E5E7EB',
+    backgroundColor: '#CCCCCC',
     width: '100%',
     position: 'absolute',
     bottom: 0,

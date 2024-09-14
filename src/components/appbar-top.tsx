@@ -4,17 +4,23 @@ import { AccountIcon } from '../features/account';
 
 export interface HeaderProps {
   title: string;
+  canLogout: boolean;
 }
 
-export function AppbarTop({ title }: HeaderProps) {
+export function AppbarTop({ title, canLogout }: HeaderProps) {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <View style={styles.emptySpace} /> 
-        <Text style={styles.title}>{title}</Text>
-        <Pressable style={styles.iconContainer}>
-          <AccountIcon />
-        </Pressable>
+        {canLogout ? 
+          <>
+            <View style={styles.emptySpace} /><Text style={styles.title}>{title}</Text>
+            <Pressable style={styles.iconContainer}>
+              <AccountIcon />
+            </Pressable>
+          </> 
+          :
+          <Text style={styles.title}>{title}</Text>
+        }
       </View>
       <View style={styles.borderBottom} />
     </View>
@@ -36,10 +42,9 @@ const styles = StyleSheet.create({
     height: '100%',
   },
   title: {
-    color: '#333333',
-    fontFamily: 'Roboto',
+    color: '#1F2937',
     fontSize: 18,
-    fontWeight: '500',
+    fontWeight: '600',
     letterSpacing: 0.5,
     textTransform: 'uppercase',
     textAlign: 'center',

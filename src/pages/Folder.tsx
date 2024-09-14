@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { View, StatusBar, StyleSheet, SafeAreaView, ActivityIndicator, FlatList, Text } from 'react-native';
+import { View, StatusBar, StyleSheet, SafeAreaView, ActivityIndicator, FlatList, Text, Modal, Pressable } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { Board } from '../features/board';
 import AppbarTopFolder from '../components/appbar-top-folder';
+import BoardCreator from '../features/board-creator/components/board-creator';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/auth';
 import 'firebase/compat/firestore';
@@ -18,6 +19,7 @@ const Folder = () => {
   const [hasMore, setHasMore] = useState(true);
   const [user, setUser] = useState<firebase.User | null>(null);
   const [index, setIndex] = useState(0);
+  const [isModalVisible, setIsModalVisible] = useState(false);
 
   const fetchData = async (loadMore = false) => {
     if (loadMore && (loadingMore || !hasMore)) return;
@@ -34,12 +36,26 @@ const Folder = () => {
         setLoading(true);
       }
 
-      let query;
+      let newData: BoardData[] = [];
 
       if (index === 0) {
-        query = firebase.firestore().collection(`users/${user.uid}/myboard`)
-          .orderBy('uploadDate', 'desc')
-          .limit(PAGE_SIZE);
+        const userDoc = await firebase.firestore().collection('users').doc(user.uid).get();
+        const myBoard = userDoc.data()?.myboard || [];
+
+        if (myBoard.length === 0) {
+          setHasMore(false);
+          setLoading(false);
+          return;
+        }
+
+        newData = myBoard.map((board: any) => ({
+          boardID: board.boardID,
+          ...board,
+        })) as BoardData[];
+
+        setData(loadMore ? [...data, ...newData] : newData);
+        setHasMore(false); 
+
       } else if (index === 1) {
         const userDoc = await firebase.firestore().collection('users').doc(user.uid).get();
         const bookmarks = userDoc.data()?.bookmark || [];
@@ -50,33 +66,34 @@ const Folder = () => {
           return;
         }
 
-        query = firebase.firestore().collection('publicboard')
+        const query = firebase.firestore().collection('publicboard')
           .where(firebase.firestore.FieldPath.documentId(), 'in', bookmarks)
           .orderBy('uploadDate', 'desc')
           .limit(PAGE_SIZE);
+
+        let snapshot;
+        if (loadMore && lastVisible) {
+          snapshot = await query.startAfter(lastVisible).get();
+        } else {
+          snapshot = await query.get();
+        }
+
+        const fetchedData = snapshot.docs.map((doc) => ({
+          boardID: doc.id,
+          ...doc.data(),
+        })) as BoardData[];
+
+        if (fetchedData.length > 0) {
+          setData(prevData => loadMore ? [...prevData, ...fetchedData] : fetchedData);
+          setLastVisible(snapshot.docs[snapshot.docs.length - 1]);
+        }
+
+        if (fetchedData.length < PAGE_SIZE) {
+          setHasMore(false);
+        }
+
       } else {
         throw new Error('Invalid index');
-      }
-
-      let snapshot;
-      if (loadMore && lastVisible) {
-        snapshot = await query.startAfter(lastVisible).get();
-      } else {
-        snapshot = await query.get();
-      }
-
-      const newData = snapshot.docs.map((doc) => ({
-        boardID: doc.id,
-        ...doc.data(),
-      })) as BoardData[];
-
-      if (newData.length > 0) {
-        setData(prevData => loadMore ? [...prevData, ...newData] : newData);
-        setLastVisible(snapshot.docs[snapshot.docs.length - 1]);
-      }
-
-      if (newData.length < PAGE_SIZE) {
-        setHasMore(false);
       }
 
     } catch (error) {
@@ -87,6 +104,7 @@ const Folder = () => {
     }
   };
 
+    
   useEffect(() => {
     const unsubscribeAuth = firebase.auth().onAuthStateChanged((currentUser) => {
       if (currentUser) {
@@ -121,12 +139,25 @@ const Folder = () => {
     return loadingMore ? <ActivityIndicator size="large" color="#334155" /> : null;
   };
 
+  const handleNewBoardPress = () => {
+    setIsModalVisible(true);
+  };
+
+  const closeModal = () => {
+    setIsModalVisible(false);
+  };
+
   return (
     <SafeAreaProvider>
       <SafeAreaView style={styles.container}>
         <AppbarTopFolder title="Effecor Memory" index={index} setIndex={setIndex} />
         {user ? 
           <View style={styles.content}>
+            {index === 0 && (
+              <Pressable style={styles.newBoardButton} onPress={handleNewBoardPress}>
+                <Text style={styles.newBoardButtonText}>New Board</Text>
+              </Pressable>
+            )}
             {loading ? (
               <ActivityIndicator size="large" color="#334155" />
             ) : (
@@ -144,6 +175,7 @@ const Folder = () => {
             <Text style={styles.message}>ログインしてください</Text>
           </View>
         }
+        <BoardCreator visible={isModalVisible} onClose={closeModal} />
       </SafeAreaView>
     </SafeAreaProvider>
   );
@@ -152,7 +184,6 @@ const Folder = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8fafc',
     marginTop: StatusBar.currentHeight,
   },
   content: {
@@ -168,6 +199,31 @@ const styles = StyleSheet.create({
     fontSize: 18,
     color: '#1e293b',
     textAlign: 'center',
+  },
+  newBoardButton: {
+    backgroundColor: '#64748b',
+    paddingVertical: 10,
+    paddingHorizontal: 10,
+    borderRadius: 10,
+    marginTop: 16,
+    alignItems: 'center',
+  },
+  newBoardButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  modalOverlay: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContent: {
+    width: '80%',
+    backgroundColor: 'white',
+    borderRadius: 10,
+    padding: 20,
+    elevation: 5,
   },
 });
 

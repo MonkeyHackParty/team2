@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, View, Text } from 'react-native';
 import Home from './src/pages/Home';
+import Search from './src/pages/Search';
 import Folder from './src/pages/Folder';
 import AppFooter from './src/components/app-footer';
 
@@ -13,7 +14,7 @@ export default function App() {
       case 0:
         return <Home />;
       case 1:
-        return <View><Text>Search Screen</Text></View>;
+        return <Search />;
       case 2:
         return <Folder />;
       default:
